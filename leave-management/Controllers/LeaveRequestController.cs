@@ -56,6 +56,22 @@ namespace leave_management.Controllers
             return View(model);
         }
 
+        public ActionResult MyLeave(int id)
+        {
+            var user = _userManager.GetUserAsync(User).Result;
+            var leaveRequests = _leaveRequestRepo.FindAll().Where(q => q.RequestingEmployeeId == user.Id);
+            var leaveAllocations = _leaveAllocationRepo.GetLeaveAllocationsByEmployee(user.Id.ToString());
+            var requestVMs = _mapper.Map<List<LeaveRequestVM>>(leaveRequests);
+            var allocationVMs = _mapper.Map<List<LeaveAllocationVM>>(leaveAllocations);
+            var model = new EmployeeLeaveRequestViewVM
+            {
+                LeaveAllovationVMs = allocationVMs,
+                LeaveRequestVMs = requestVMs
+            };
+
+            return View(model);
+        }
+
         public ActionResult ApproveRequest(int id)
         {
             try

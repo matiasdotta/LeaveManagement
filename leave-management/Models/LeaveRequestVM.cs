@@ -44,6 +44,12 @@ namespace leave_management.Models
         public List<LeaveRequestVM> LeaveRequestVMs { get; set; }
     }
 
+    public class EmployeeLeaveRequestViewVM
+    {
+        public List<LeaveAllocationVM> LeaveAllovationVMs { get; set; }
+        public List<LeaveRequestVM> LeaveRequestVMs { get; set; }
+    }
+
     public class CreateLeaveRequestVM
     {
         [Display(Name = "Start Date")]
@@ -58,4 +64,6 @@ namespace leave_management.Models
         [Display(Name = "Leave Type")]
         public int LeaveTypeId { get; set; }
     }
+
+    
 }
