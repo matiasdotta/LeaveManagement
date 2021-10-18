@@ -29,10 +29,10 @@ namespace leave_management.Controllers
 
         }
         // GET: LeaveAllocationController
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
-            var leavetype = _leaverepo.FindAll().ToList();
-            var mappedLeaveTypes = _mapper.Map<List<LeaveType>, List<LeaveTypeVM>>(leavetype);
+            var leavetype = await _leaverepo.FindAll();
+            var mappedLeaveTypes = _mapper.Map<List<LeaveType>, List<LeaveTypeVM>>(leavetype.ToList());
             var model = new CreateLeaveAllocationVM
             {
                 LeaveTypes = mappedLeaveTypes,
@@ -41,13 +41,13 @@ namespace leave_management.Controllers
             return View(model);
         }
 
-        public ActionResult SetLeave(int id)
+        public async Task<ActionResult> SetLeave(int id)
         {
-            var leaveType = _leaverepo.FindById(id);
-            var employees = _userManager.GetUsersInRoleAsync("Employee").Result;
+            var leaveType = await _leaverepo.FindById(id);
+            var employees = await _userManager.GetUsersInRoleAsync("Employee");
             foreach(var emp in employees)
             {
-                if (_leaveallocationrepo.CheckAllocation(id, emp.Id))
+                if (await _leaveallocationrepo.CheckAllocation(id, emp.Id))
                     continue;
                 var allocation = new LeaveAllocationVM
                 {
@@ -58,24 +58,24 @@ namespace leave_management.Controllers
                     Period = DateTime.Now.Year
                 };
                 var leaveAllocation = _mapper.Map<LeaveAllocation>(allocation);
-                _leaveallocationrepo.Create(leaveAllocation);
+                await _leaveallocationrepo.Create(leaveAllocation);
             }
             return RedirectToAction(nameof(Index));
         }
 
-        public ActionResult ListEmployees()
+        public async Task<ActionResult> ListEmployees()
         {
-            var employees = _userManager.GetUsersInRoleAsync("Employee").Result;
+            var employees = await _userManager.GetUsersInRoleAsync("Employee");
             var model = _mapper.Map<List<EmployeeVM>>(employees);
             return View(model);
         }
 
         // GET: LeaveAllocationController/Details/5
-        public ActionResult Details(string id)
+        public async Task<ActionResult> Details(string id)
         {
-            var employee = _mapper.Map<EmployeeVM>(_userManager.FindByIdAsync(id).Result);
+            var employee = _mapper.Map<EmployeeVM>(await _userManager.FindByIdAsync(id));
             var period = DateTime.Now.Year;
-            var allocations = _mapper.Map<List<LeaveAllocationVM>>(_leaveallocationrepo.GetLeaveAllocationsByEmployee(id));
+            var allocations = _mapper.Map<List<LeaveAllocationVM>>(await _leaveallocationrepo.GetLeaveAllocationsByEmployee(id));
             var model = new ViewAllocationsVM
             {
                 Employee = employee,
@@ -106,9 +106,9 @@ namespace leave_management.Controllers
         }
 
         // GET: LeaveAllocationController/Edit/5
-        public ActionResult Edit(int id)
+        public async Task<ActionResult> Edit(int id)
         {
-            var leaveAllocation = _leaveallocationrepo.FindById(id);
+            var leaveAllocation = await _leaveallocationrepo.FindById(id);
             var model = _mapper.Map<EditLeaveAllocationsVM>(leaveAllocation);
 
             return View(model);
@@ -117,7 +117,7 @@ namespace leave_management.Controllers
         // POST: LeaveAllocationController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(EditLeaveAllocationsVM model)
+        public async Task<ActionResult> Edit(EditLeaveAllocationsVM model)
         {
             try
             {
@@ -125,9 +125,9 @@ namespace leave_management.Controllers
                 {
                     return View(model);
                 }
-                var record = _leaveallocationrepo.FindById(model.Id);
+                var record = await _leaveallocationrepo.FindById(model.Id);
                 record.NumberOfDays = model.NumberOfDays;
-                var isSuccess = _leaveallocationrepo.Update(record);
+                var isSuccess = await _leaveallocationrepo.Update(record);
                 if (!isSuccess)
                 {
                     ModelState.AddModelError("", "Error while saving");
