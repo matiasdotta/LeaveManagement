@@ -35,9 +35,7 @@ namespace leave_management
                     Configuration.GetConnectionString("DefaultConnection")));
 
             //Add reference for repository and contract files
-            services.AddScoped<ILeaveTypeRepository, LeaveTypeRepository>();
-            services.AddScoped<ILeaveRequestRepository, LeaveRequestRepository>();
-            services.AddScoped<ILeaveAllocationRepository, LeaveAllocationRepository>();
+            services.AddTransient<IUnitOfWork, UnitOfWork>();
 
             //Calls automapper to get data from data class to View Model class
             services.AddAutoMapper(typeof(Maps));
